@@ -1,0 +1,8 @@
+[package]
+name = "wasi-genetic"
+version = "0.1.0"
+authors = ["Daniel Budden <daniel.l.budden@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+rand = { git = "https://github.com/rust-random/rand", rev = "01343e1" }
