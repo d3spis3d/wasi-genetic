@@ -1,7 +1,13 @@
+use std::path::PathBuf;
+
+use csv::Reader;
 use rand::{thread_rng, Rng};
 use rand::seq::SliceRandom;
 use rand::distributions::{Distribution, Uniform};
+use serde::Deserialize;
+use structopt::StructOpt;
 
+#[derive(Deserialize)]
 pub struct City {
     x: f64,
     y: f64,
@@ -80,16 +86,15 @@ pub struct Simulation {
 impl Simulation {
     pub fn new(
         population_size: usize,
-        city_list: String,
+        cities: Vec<City>,
         max_iterations: usize,
         crossover_rate: f64,
         mutation_rate: f64,
         survival_rate: f64,
     ) -> Simulation {
-        let parsed_city_list = Simulation::parse_city_list(city_list);
         Simulation {
-            population: Simulation::initial_population(&parsed_city_list, population_size),
-            city_list: parsed_city_list,
+            population: Simulation::initial_population(&cities, population_size),
+            city_list: cities,
             max_iterations,
             crossover_rate,
             mutation_rate,
@@ -186,23 +191,42 @@ impl Simulation {
 
         population
     }
-
-    fn parse_city_list(city_list: String) -> Vec<City> {
-        let cities: Vec<City> = city_list.split(";").map(|c| {
-            let coords: Vec<&str> = c.split(",").collect();
-            City {
-                x: coords[0].parse::<f64>().unwrap(),
-                y: coords[1].parse::<f64>().unwrap(),
-            }
-        }).collect();
-
-        cities
-    }
 }
 
+#[derive(StructOpt)]
+#[structopt()]
+struct Opt {
+    #[structopt(name = "iterations")]
+    iterations: usize,
+    #[structopt(name = "pop_size")]
+    population_size: usize,
+    #[structopt(name = "crossover_rate")]
+    crossover_rate: f64,
+    #[structopt(name = "mutation_rate")]
+    mutation_rate: f64,
+    #[structopt(name = "survival_rate")]
+    survival_rate: f64,
+    #[structopt(name = "csv", parse(from_os_str))]
+    csv: PathBuf,
+}
 
 fn main() {
-    let cities = "1.0,3.0;1.0,2.0;1.0,1.0;4.0,3.0;2.0,1.0;3.0,3.0;3.0,2.0;3.0,1.0;4.0,4.0";
-    let mut sim = Simulation::new(100, cities.to_string(), 250, 0.4, 0.001, 0.3);
+    let opts = Opt::from_args();
+    let mut reader = Reader::from_path(opts.csv).unwrap();
+    let cities: Vec<City> = reader.deserialize()
+        .map(|r| {
+            let result: City = r.unwrap();
+            result
+        })
+        .collect();
+
+    let mut sim = Simulation::new(
+        opts.iterations,
+        cities,
+        opts.population_size,
+        opts.crossover_rate,
+        opts.mutation_rate,
+        opts.survival_rate,
+    );
     sim.run();
 }
