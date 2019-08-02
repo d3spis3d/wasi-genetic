@@ -1,3 +1,9 @@
+## Genetic Algorithm with WebAssembly, out of the browser
+
+Ensure you have a compiled [wasmtime](https://github.com/CraneStation/wasmtime/).
+
+To run:
+
 ```
 cargo +nightly build --target wasm32-unknown-wasi --release
 
