@@ -5,7 +5,9 @@ Ensure you have a compiled [wasmtime](https://github.com/CraneStation/wasmtime/)
 To run:
 
 ```
-cargo +nightly build --target wasm32-unknown-wasi --release
+rustup target add wasm32-wasi
 
-../wasmtime/target/release/wasmtime --dir=. target/wasm32-unknown-wasi/release/wasi-genetic.wasm 5000 500 0.4 0.001 0.3 cities.csv
+cargo build --target wasm32-wasi --release
+
+../wasmtime/target/release/wasmtime --dir=. target/wasm32-wasi/release/wasi-genetic.wasm 5000 500 0.4 0.001 0.3 cities.csv
 ```
